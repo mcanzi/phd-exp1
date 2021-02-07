@@ -3,8 +3,7 @@ title: "ERP_exploration"
 author: "Massimiliano Canzi"
 date: "27/03/2019"
 output:
-  html_document: defauxwlt
-  pdf_document: default
+  html_document: default
 ---
 
 ```{r setup, include = FALSE}
@@ -22,54 +21,12 @@ library(scales)
 library(reshape2)
 library(lme4)
 library(lmerTest)
-
-matplotlibRdBu_r <- colorRampPalette(c("#053061","#4694C4","#F6F6F6","#E7886C","#67001F"),interpolate = "spline")
 ```
 
-```{r, warnings = FALSE}
-ERP <- rbind(read.csv("EXP1_pt1.csv"), read.csv("EXP1_pt2.csv")) %>% 
-            filter_if(~is.numeric(.), all_vars(!is.infinite(.)))
+```{r, include = FALSE}
+matplotlibRdBu_r <- colorRampPalette(c("#053061","#4694C4","#F6F6F6","#E7886C","#67001F"), interpolate = "spline")
 
-ERP <- ERP[(ERP$time >= -100) & (ERP$time <= 800),]
-
-ERP <- gather(ERP, electrode, amplitude, Fp1:T8, factor_key=TRUE)
-ERP$time <- format(round(ERP$time, 0), nsmall = 0) 
-ERP$time <- as.numeric(as.character(ERP$time))
-names(ERP) <- c("subject", "block", "condition", "time", "electrode", "amplitude")
-```
-
-```{r}
-electrodeLocs <- read_delim("https://raw.githubusercontent.com/craddm/ExploringERPs/master/biosemi70elecs.loc", "\t",
-  escape_double = FALSE,
-  col_names = c("chanNo","theta","radius", "electrode"),
-  trim_ws = TRUE)
-
-ERP$electrode <- as.factor(ERP$electrode)
-ERP$subject <- as.factor(ERP$subject)
-ERP$BLOCK <- as.factor(ERP$block)
-
-ERP$time <- as.factor(ERP$time)
-ERP <- ERP %>% group_by(subject, block, condition, electrode, time) %>% 
-  summarise(amplitude.mean=mean(amplitude),) %>% 
-  ungroup  
-ERP$time <- as.numeric(as.character(ERP$time))
-
-ERP_testing <- ERP
-ERP_testing$time <- as.double(ERP_testing$time)
-ERP_testing$amplitude.mean <- as.double(ERP_testing$amplitude.mean)
-
-electrodeLocs$radianTheta <- pi/180*electrodeLocs$theta
-electrodeLocs <- electrodeLocs %>%
-  mutate(x = .$radius*sin(.$radianTheta), y = .$radius*cos(.$radianTheta))
-
-ERP <- ERP %>% left_join(electrodeLocs, by = "electrode")
-
-ERP$amplitude.mean <- as.numeric(ERP$amplitude.mean)
-ERP$electrode <- as.factor(ERP$electrode)
-
-ERP <- filter(ERP, amplitude.mean <= 7 & amplitude.mean >= -7)
-ERP$amplitude.mean <- format(round(ERP$amplitude.mean, 2), nsmall = 2)
-ERP$amplitude.mean <- as.numeric(ERP$amplitude.mean)
+loc_path <- "https://raw.githubusercontent.com/craddm/ExploringERPs/master/biosemi70elecs.loc"
 
 ERP_CTT = c("steelblue", "indianred2")
 sign_col <- "indianred"
@@ -77,7 +34,49 @@ ERP_CTB = c("skyblue4", "palegreen3")
 ERP_TTB = c("indianred2", "palegreen3")
 ```
 
-```{r}
+```{r, message = FALSE, warnings = FALSE}
+ERP <- rbind(read.csv("EXP1_pt1.csv"), read.csv("EXP1_pt2.csv")) %>% 
+  filter_if(~is.numeric(.), all_vars(!is.infinite(.))) %>%
+  filter(time >= -100 | time <= 800)
+
+ERP <- ERP %>% 
+  gather(electrode, amplitude, Fp1:T8, factor_key = TRUE) %>%
+  mutate(time = as.numeric(as.character(format(round(time, 0), nsmall = 0))),
+         Subj = as.factor(Subj),
+         Block = as.factor(Block))
+
+names(ERP) <- c("subject", "block", "condition", "time", "electrode", "amplitude")
+```
+
+```{r, message = FALSE}
+electrodeLocs <- read_delim(loc_path, "\t",
+  escape_double = FALSE,
+  col_names = c("chanNo","theta","radius", "electrode"),
+  trim_ws = TRUE)
+
+ERP <- ERP %>% 
+  mutate(time = as.factor(time)) %>%
+  group_by(subject, block, condition, electrode, time) %>% 
+  summarise(amplitude.mean = mean(amplitude),) %>% 
+  ungroup() %>%
+  mutate(time = as.numeric(as.character(time)))
+
+ERP_testing <- ERP %>%
+  mutate(time = as.double(time), 
+         amplitude.mean = as.double(amplitude.mean))
+
+electrodeLocs <- electrodeLocs %>%
+  mutate(radianTheta <- pi / 180 * theta,
+          x = radius * sin(radianTheta), y = radius * cos(radianTheta))
+
+ERP <- ERP %>% left_join(electrodeLocs, by = "electrode") %>%
+  mutate(amplitude.meean = as.numeric(amplitude.mean), 
+         electrode = as.factor(electrode)) %>%
+  filter(amplitude.mean <= 7 & amplitude.mean >= -7) %>%
+  mutate(amplitude.mean <- as.numeric(format(round(amplitude.mean, 2), nsmall = 2)))
+```
+
+```{r, fig.show = "hide"}
 significance <- function(elec = "", blck = "PRS") {
 
   ERP_test <- filter(ERP_testing, block == blck)
@@ -97,8 +96,9 @@ significance <- function(elec = "", blck = "PRS") {
 
 ```{r}
 bae <- function(elec = "Cz", blck = "PRS", labels = FALSE, significant = TRUE) {
-  ERP_gae <- filter(ERP, electrode == elec)
-  ERP_gae <- filter(ERP_gae, block == blck)
+  ERP_gae <- ERP %>% 
+    filter(electrode == elec) %>%
+    filter(block == blck)
   
   if (blck == "PRS") {
     ERP_CTT = c("steelblue", "indianred2") }
@@ -146,70 +146,55 @@ bae <- function(elec = "Cz", blck = "PRS", labels = FALSE, significant = TRUE) {
 ```
 
 ```{r}
-gavglme <- function(TP1, TP2, where) {
+gavglme <- function(TP1, TP2, where = "", REML = TRUE) {
 
-  ERP_lme <- filter(ERP, time >= TP1) %>%
+  ERP_lme <- ERP %>% 
+    filter(time >= TP1) %>%
     filter(time <= TP2) %>%
-    filter(block == "BSL")
-
-  ERP_lme <- ERP_lme %>% group_by(subject, block, condition, electrode) %>%
+    filter(block == "BSL") %>%
+    group_by(subject, block, condition, electrode) %>%
     summarise(avg.mean = mean(amplitude.mean),) %>%
-    ungroup
+    ungroup()
   
-  fr <- filter(ERP_lme, electrode == "F2" | electrode == "F4" | electrode == "F6")
-  fr$region = "frontal"
-  fr$side = "right"
+  fr <- filter(ERP_lme, electrode == "F2" | electrode == "F4" | electrode == "F6") %>%
+    mutate(region = "frontal", side = "right")
+  fcr <- filter(ERP_lme, electrode == "FC2" | electrode == "FC4" | electrode == "FC6") %>%
+    mutate(region = "frontocentral", side = "right")
+  fcl <- filter(ERP_lme, electrode == "FC1" | electrode == "FC3" | electrode == "FC5") %>%
+    mutate(region = "frontocentral", side = "left")
+  cr <- filter(ERP_lme, electrode == "C2" | electrode == "C4" | electrode == "C6") %>%
+    mutate(region = "central", side = "right") 
+  fl <- filter(ERP_lme, electrode == "F1" | electrode == "F3" | electrode == "F5") %>%
+    mutate(region = "frontal", side = "left") 
+  cl <- filter(ERP_lme, electrode == "C1" | electrode == "C3" | electrode == "C5") %>%
+    mutate(region = "central", side = "left")
+  pr <- filter(ERP_lme, electrode == "P2" | electrode == "P4" | electrode == "P6") %>%
+    mutate(region = "parietal", side = "right") 
+  pl <- filter(ERP_lme, electrode == "P1" | electrode == "P3" | electrode == "P5") %>%
+    mutate(region = "parietal", side = "left") 
+  pfr <- filter(ERP_lme, electrode == "Fp2") %>%
+    mutate(region = "prefrontral", side = "right") 
+  pfl <- filter(ERP_lme, electrode == "Fp1") %>%
+    mutate(region = "prefrontal", side = "left") 
   
-  fcr <- filter(ERP_lme, electrode == "FC2" | electrode == "FC4" | electrode == "FC6")
-  fcr$region = "frontocentral"
-  fcr$side = "right"
+  lme_data <- rbind(fr, fl, fcr, fcl, cr, cl, pr, pl, pfr, pfl)
   
-  fcl <- filter(ERP_lme, electrode == "FC1" | electrode == "FC3" | electrode == "FC5")
-  fcl$region = "frontocentral"
-  fcl$side = "left"
+  if (where != "") {
+    m <- lme_data %>%
+      filter(region == where) %>%
+      lmer(formula = avg.mean ~ condition * side + (1 + condition | subject),
+                    REML = REML)
+    n <- summary(m) }
   
-  cr <- filter(ERP_lme, electrode == "C2" | electrode == "C4" | electrode == "C6")
-  cr$region = "central"
-  cr$side = "right"
-  
-  fl <- filter(ERP_lme, electrode == "F1" | electrode == "F3" | electrode == "F5")
-  fl$region = "frontal"
-  fl$side = "left"
-  
-  cl <- filter(ERP_lme, electrode == "C1" | electrode == "C3" | electrode == "C5")
-  cl$region = "central" 
-  cl$side = "left"
-    
-  pr <- filter(ERP_lme, electrode == "P2" | electrode == "P4" | electrode == "P6")
-  pr$region = "parietal"
-  pr$side = "right"
-
-  pl <- filter(ERP_lme, electrode == "P1" | electrode == "P3" | electrode == "P5")
-  pl$region = "parietal"
-  pl$side = "left"
-  
-  pfr <- filter(ERP_lme, electrode == "Fp2") 
-  pfr$region = "prefrontal"
-  pfr$side = "right"
-  
-  pfl <- filter(ERP_lme, electrode == "Fp1") 
-  pfl$region = "prefrontal"
-  pfl$side = "left"
-
-  lme_data <- rbind(fr, fl, fcr, fcl, cr, cl, pr, pl, pfr, pfl) 
-  lme_data <- filter(lme_data, region == where) # remove this line and change model to avg.mean ~ condition * region for region interactions if necessary. This method adds region and hemisphere as co-variables. 
-
-  m <- lmer(avg.mean ~ condition * side + (1 + condition | subject), lme_data)
-  n <- summary(m)
+  else {
+    n <- summary(lmer(formula = avg.mean ~ region * condition * side + (1 + condition | subject), 
+                    data = lme_data,
+                    REML = REML)) }
   
   return(n) }
-
-  # random sample model
-  gavglme(575, 625, "parietal")
 ```
 
-
-```{r}
+```{r, eval = FALSE}
 anterior_frontal <- ggarrange(
   bae(elec = "Fp1", labels = TRUE),
   bae(elec = "Fpz"),
@@ -241,7 +226,7 @@ fronto_central <- ggarrange(
 ggsave("./pictures/P4_Exp1.png", fronto_central, width = 11, height = 9, dpi = "print")
 ```
 
-```{r}
+```{r, eval = FALSE}
 BLanterior_frontal <- ggarrange(
   bae(elec = "AF7", blck = "BSL", labels = TRUE),
   bae(elec = "AF8", blck = "BSL"),
@@ -289,8 +274,8 @@ significance_block <- function(elec = "", cond = "target") {
 
 ```{r}
 gae <- function(elec = "Cz", cond = "target", labels = FALSE, significant = TRUE) {
-  ERP_gae <- filter(ERP, electrode == elec) %>% filter(time %% 5 == 0)
-  ERP_gae <- filter(ERP_gae, condition == cond)
+  ERP_gae <- filter(ERP, electrode == elec) %>% filter(time %% 5 == 0) %>%
+    filter(condition == cond)
   
   if (cond == "target") {
     ERP_CTT <- c("indianred2", "palegreen3") }
@@ -340,7 +325,8 @@ gae <- function(elec = "Cz", cond = "target", labels = FALSE, significant = TRUE
   return(gap) }
 ```
 
-```{r}
+```{r, eval = FALSE}
+
 SMBL_AF <- ggarrange(
   gae(elec = "Fp1", labels = TRUE),
   gae(elec = "Fpz"),
@@ -392,27 +378,23 @@ int_scalp_plot <- function(TP1, TP2, cond = "control") {
   
   ERP_lme <- filter(ERP, time >= TP1) %>%
     filter(time <= TP2) %>%
-    filter(block == "PRS")
-
-  ERP_lme <- ERP_lme %>% group_by(subject, block, condition, electrode) %>%
+    filter(block == "PRS") %>%
+    group_by(subject, block, condition, electrode) %>%
     summarise(avg.mean = mean(amplitude.mean),) %>%
-    ungroup
+    ungroup %>% 
+    filter(condition == cond)
   
-  ERP_lme <- filter(ERP_lme, condition == cond)
   gridRes <- 124
   
   electrodeLocs <- read_delim("https://raw.githubusercontent.com/craddm/ExploringERPs/master/biosemi70elecs.loc", "\t",
-  escape_double = FALSE,
-  col_names = c("chanNo","theta","radius", "electrode"),
-  trim_ws = TRUE)
+  escape_double = FALSE, col_names = c("chanNo","theta","radius", "electrode"), trim_ws = TRUE)
   
-  electrodeLocs$radianTheta <- pi/180*electrodeLocs$theta
-  electrodeLocs <- electrodeLocs %>%
-  mutate(x = .$radius*sin(.$radianTheta), y = .$radius*cos(.$radianTheta))
+  electrodeLocs <- ElectrodeLocs %>% 
+  mutate(radianTheta = pi / 180 * theta) %>%
+  mutate(x = radius * sin(radianTheta), y = radius * cos(radianTheta))
 
-  singleTimepoint <- ERP_lme %>% left_join(electrodeLocs, by = "electrode")
-
-  singleTimepoint$Amplitude <- singleTimepoint$avg.mean
+  singleTimepoint <- ERP_lme %>% left_join(electrodeLocs, by = "electrode") %>%
+    mutate(Amplitude <- avg.mean)
   
   tmpTopo <- with(singleTimepoint, interp(x = x, y = y, z = Amplitude, xo = seq(min(x)*2, max(x)*2, length = gridRes), yo = seq(min(y)*2, max(y)*2, length = gridRes), linear = FALSE, extrap = TRUE, duplicate = TRUE))
 
@@ -447,7 +429,9 @@ final_plot <- ggarrange(
   common.legend = TRUE)
 
 return(final_plot) }
+```
 
+```{r, eval = FALSE}
 mmn <- int_compare_scalps(160, 190)
 ggsave("./pictures/scalp_MMN.png", mmn, width = 9, height = 5, dpi = "print")
 
