@@ -1,16 +1,12 @@
 ---
-title: "ERP_exploration"
-author: "Massimiliano Canzi"
-date: "27/03/2019"
+title: "PhD: Experiment __1__"
+author: "Massimiliano Canzi | `massimiliano.canzi@uni-konstanz.de"
+date: "27/03/2019; Last modified 15/02/2021"
 output:
   html_document: default
 ---
 
-```{r setup, include = FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
-
-```{r, include = FALSE}
+```{r, message = F}
 library(ggpubr)
 library(devtools)
 library(tidyverse)
@@ -34,6 +30,8 @@ ERP_CTB = c("skyblue4", "palegreen3")
 ERP_TTB = c("indianred2", "palegreen3")
 ```
 
+# `readr`
+
 ```{r, message = FALSE, warnings = FALSE}
 ERP <- rbind(read.csv("EXP1_pt1.csv"), read.csv("EXP1_pt2.csv")) %>% 
   filter_if(~is.numeric(.), all_vars(!is.infinite(.))) %>%
@@ -47,6 +45,8 @@ ERP <- ERP %>%
 
 names(ERP) <- c("subject", "block", "condition", "time", "electrode", "amplitude")
 ```
+
+# attaching `electrodeLocs`
 
 ```{r, message = FALSE}
 electrodeLocs <- read_delim(loc_path, "\t",
@@ -76,6 +76,8 @@ ERP <- ERP %>% left_join(electrodeLocs, by = "electrode") %>%
   mutate(amplitude.mean <- as.numeric(format(round(amplitude.mean, 2), nsmall = 2)))
 ```
 
+# plotting function `significance`
+
 ```{r, fig.show = "hide"}
 significance <- function(elec = "", blck = "PRS") {
 
@@ -93,6 +95,10 @@ significance <- function(elec = "", blck = "PRS") {
   
   return(fabh$significant) }
 ```
+
+# plotting function `bae` 
+
+`bae` was actually an acronym, but cannot remember what of to save my life! 
 
 ```{r}
 bae <- function(elec = "Cz", blck = "PRS", labels = FALSE, significant = TRUE) {
@@ -145,54 +151,41 @@ bae <- function(elec = "Cz", blck = "PRS", labels = FALSE, significant = TRUE) {
   return(gap) }
 ```
 
-```{r}
-gavglme <- function(TP1, TP2, where = "", REML = TRUE) {
+# function `gavglme` and `lmer` models
 
-  ERP_lme <- ERP %>% 
+```{r, message = F}
+gavglme <- function(TP1, TP2, where = "", somewhere.else = "", REML = TRUE) {
+
+  lme_data <- left_join(ERP %>% 
     filter(time >= TP1) %>%
     filter(time <= TP2) %>%
-    filter(block == "BSL") %>%
+    filter(block == "PRS") %>%
     group_by(subject, block, condition, electrode) %>%
     summarise(avg.mean = mean(amplitude.mean),) %>%
-    ungroup()
+    ungroup(), read.csv("lmer_electrodes.csv", sep = ";"), by = "electrode")
   
-  fr <- filter(ERP_lme, electrode == "F2" | electrode == "F4" | electrode == "F6") %>%
-    mutate(region = "frontal", side = "right")
-  fcr <- filter(ERP_lme, electrode == "FC2" | electrode == "FC4" | electrode == "FC6") %>%
-    mutate(region = "frontocentral", side = "right")
-  fcl <- filter(ERP_lme, electrode == "FC1" | electrode == "FC3" | electrode == "FC5") %>%
-    mutate(region = "frontocentral", side = "left")
-  cr <- filter(ERP_lme, electrode == "C2" | electrode == "C4" | electrode == "C6") %>%
-    mutate(region = "central", side = "right") 
-  fl <- filter(ERP_lme, electrode == "F1" | electrode == "F3" | electrode == "F5") %>%
-    mutate(region = "frontal", side = "left") 
-  cl <- filter(ERP_lme, electrode == "C1" | electrode == "C3" | electrode == "C5") %>%
-    mutate(region = "central", side = "left")
-  pr <- filter(ERP_lme, electrode == "P2" | electrode == "P4" | electrode == "P6") %>%
-    mutate(region = "parietal", side = "right") 
-  pl <- filter(ERP_lme, electrode == "P1" | electrode == "P3" | electrode == "P5") %>%
-    mutate(region = "parietal", side = "left") 
-  pfr <- filter(ERP_lme, electrode == "Fp2") %>%
-    mutate(region = "prefrontral", side = "right") 
-  pfl <- filter(ERP_lme, electrode == "Fp1") %>%
-    mutate(region = "prefrontal", side = "left") 
+  if (somewhere.else == "") {
   
-  lme_data <- rbind(fr, fl, fcr, fcl, cr, cl, pr, pl, pfr, pfl)
-  
-  if (where != "") {
     m <- lme_data %>%
-      filter(region == where) %>%
-      lmer(formula = avg.mean ~ condition * side + (1 + condition | subject),
-                    REML = REML)
-    n <- summary(m) }
+    filter(region == where) %>% filter(side != "none") %>% 
+    lmer(formula = avg.mean ~ condition * side + (1 + condition | subject),
+         REML = REML) }
   
   else {
-    n <- summary(lmer(formula = avg.mean ~ region * condition * side + (1 + condition | subject), 
-                    data = lme_data,
-                    REML = REML)) }
-  
-  return(n) }
+    
+    m <- lme_data %>%
+    filter(region == where | region == somewhere.else) %>% filter(side != "none") %>% 
+    lmer(formula = avg.mean ~ region * condition + region : side + (1 + condition | subject),
+         REML = REML) }
+
+  return(m) }
+
+sjPlot::tab_model(gavglme(150, 200, "frontocentral", "frontal"))
+sjPlot::tab_model(gavglme(250, 300, "central", "frontocentral"))
+sjPlot::tab_model(gavglme(575, 625, "parietal"))
 ```
+
+# plots
 
 ```{r, eval = FALSE}
 anterior_frontal <- ggarrange(
@@ -254,6 +247,8 @@ BLfronto_central <- ggarrange(
 ggsave("./pictures/P11_Exp1.png", BLfronto_central, width = 9, height = 11, dpi = "print")
 ```
 
+# function `significance_block`
+
 ```{r}
 significance_block <- function(elec = "", cond = "target") {
   
@@ -271,6 +266,8 @@ significance_block <- function(elec = "", cond = "target") {
   
   return(fabh$significant) }
 ```
+
+# plotting function `gae`
 
 ```{r}
 gae <- function(elec = "Cz", cond = "target", labels = FALSE, significant = TRUE) {
@@ -325,8 +322,9 @@ gae <- function(elec = "Cz", cond = "target", labels = FALSE, significant = TRUE
   return(gap) }
 ```
 
-```{r, eval = FALSE}
+# more plots
 
+```{r, eval = FALSE}
 SMBL_AF <- ggarrange(
   gae(elec = "Fp1", labels = TRUE),
   gae(elec = "Fpz"),
@@ -358,6 +356,8 @@ SMBL_FC <- ggarrange(
 ggsave("./pictures/P8_Exp1.png", SMBL_FC, width = 11, height = 9, dpi = "print")
 ```
 
+# scalp map template
+
 ```{r}
 theme_topo <- function(base_size = 12)
   {theme_bw(base_size = base_size) %+replace% theme(rect = element_blank(), line = element_blank(), axis.text = element_blank(), axis.title = element_blank())}
@@ -373,6 +373,8 @@ headShape <- circleFun(c(0, 0), round(max(electrodeLocs$x)), npoints = 100)
 nose <- data.frame(x = c(-0.075, 0, .075), y=c(.495, .575, .495))
 ```
 
+# functions `int_scalp_plot` and `int_compare_scalps`
+
 ```{r}
 int_scalp_plot <- function(TP1, TP2, cond = "control") {
   
@@ -386,7 +388,7 @@ int_scalp_plot <- function(TP1, TP2, cond = "control") {
   
   gridRes <- 124
   
-  electrodeLocs <- read_delim("https://raw.githubusercontent.com/craddm/ExploringERPs/master/biosemi70elecs.loc", "\t",
+  electrodeLocs <- read_delim(loc_path,
   escape_double = FALSE, col_names = c("chanNo","theta","radius", "electrode"), trim_ws = TRUE)
   
   electrodeLocs <- ElectrodeLocs %>% 
@@ -430,6 +432,8 @@ final_plot <- ggarrange(
 
 return(final_plot) }
 ```
+
+# topographical maps
 
 ```{r, eval = FALSE}
 mmn <- int_compare_scalps(160, 190)
