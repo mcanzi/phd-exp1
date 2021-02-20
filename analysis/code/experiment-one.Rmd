@@ -8,6 +8,7 @@ output:
 
 ```{r packages, include = F}
 library(ggpubr)
+library(emmeans)
 library(devtools)
 library(tidyverse)
 library(ERP)
@@ -255,45 +256,6 @@ gae <- function(elec = "Cz", cond = "target", labels = FALSE, significant = TRUE
 
 ```{r sample.gae, message = F, echo = F}
 gae()
-```
-
-## function `gavglme` and `lmer` models
-
-```{r lme.function, message = F}
-gavglme <- function(TP1, TP2, where = "", somewhere.else = "", REML = TRUE) {
-
-  lme_data <- left_join(ERP %>% 
-    filter(time >= TP1) %>%
-    filter(time <= TP2) %>%
-    filter(block == "PRS") %>%
-    group_by(subject, block, condition, electrode) %>%
-    summarise(avg.mean = mean(amplitude.mean),) %>%
-    ungroup(), read.csv("../resources/lmer_electrodes.csv", sep = ";"), by = "electrode")
-  
-  if (somewhere.else == "") {
-  
-    m <- lme_data %>%
-    filter(region == where) %>% filter(side != "none") %>% 
-    lmer(formula = avg.mean ~ condition * side + (1 + condition | subject),
-         REML = REML) }
-  
-  else {
-    
-    m <- lme_data %>%
-    filter(region == where | region == somewhere.else) %>% filter(side != "none") %>% 
-    lmer(formula = avg.mean ~ region * condition + region : side + (1 + condition | subject),
-         REML = REML) }
-
-  return(m) }
-```
-
-```{r sample.model.summary, message = F}
-summary(gavglme(150, 200, "frontocentral", "frontal"))
-```
-
-```{r sample.models, eval = F, message = F}
-sjPlot::tab_model(gavglme(250, 300, "central", "frontocentral")
-sjPlot::tab_model(gavglme(575, 625, "parietal"))
 ```
 
 ## scalp template: `theme_topo`

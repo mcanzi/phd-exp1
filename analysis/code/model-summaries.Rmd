@@ -1,0 +1,75 @@
+---
+title: "Experiment 1: Data modelling"
+author: "Massimiliano Canzi"
+date: "20/02/2021"
+output: html_document
+---
+
+```{r, message = F}
+library(emmeans)
+library(lme4)
+library(magrittr)
+library(tidyverse)
+```
+
+```{r reading.data, message = F, warning = F}
+ERP <- bind_rows(read.csv("../data/EXP1_pt1.csv"), read.csv("../data/EXP1_pt2.csv")) %>% 
+  filter_if(~is.numeric(.), all_vars(!is.infinite(.))) %>%
+  filter(time >= -100 | time <= 800) %>% 
+  gather(electrode, amplitude, Fp1:T8, factor_key = TRUE) %>%
+  mutate(time = as.numeric(as.character(format(round(time, 0), nsmall = 0))),
+         Subj = as.factor(Subj),
+         Block = as.factor(Block))
+
+names(ERP) <- c("subject", "block", "condition", "time", "electrode", "amplitude")
+```
+
+```{r channel.locations, message = F}
+ERP %<>% mutate(time = as.factor(time)) %>%
+  group_by(subject, block, condition, electrode, time) %>% 
+  summarise(amplitude.mean = mean(amplitude),) %>% 
+  ungroup() %>% 
+  mutate(time = as.numeric(as.character(time)), 
+         amplitude.mean = as.numeric(amplitude.mean), 
+         electrode = as.factor(electrode)) %>%
+  filter(amplitude.mean <= 7 & amplitude.mean >= -7) %>%
+  mutate(amplitude.mean = as.numeric(format(round(amplitude.mean, 2), nsmall = 2)))
+```
+
+```{r lmer.function, message = F}
+summarised.model <- function(TP1, TP2, type = "lmer") {
+
+  lmer_data <- left_join(ERP %>% 
+    filter(time >= TP1) %>%
+    filter(time <= TP2) %>%
+    filter(block == "PRS") %>%
+    group_by(subject, block, condition, electrode) %>%
+    summarise(avg.mean = mean(amplitude.mean),) %>%
+    ungroup(), read.csv("../resources/lmer_electrodes.csv", sep = ";"), by = "electrode")
+
+    if (type == "lmer")
+  
+      m <- lmer_data %>%
+      lmer(formula = avg.mean ~ condition * region + side + (1 | subject))
+    
+    if (type == "lm")
+      
+      m <- lmer_data %>%
+      lm(formula = avg.mean ~ condition * region + side) 
+
+  return(m) }
+```
+
+```{r, message = F}
+anova(summarised.model(150, 200, type = "lm"))
+emmeans(summarised.model(150, 200, type = "lm"), pairwise ~ condition | region)
+```
+
+```{r, message = F}
+anova(summarised.model(275, 325, type = "lm"))
+```
+```{r, message = F}
+anova(summarised.model(575, 625, type = "lm"))
+emmeans(summarised.model(575, 625, type = "lm"), pairwise ~ condition | region)
+```
+
