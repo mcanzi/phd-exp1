@@ -35,8 +35,7 @@ ERP_TTB = c("indianred3", "palegreen3")
 ```{r reading.data, message = F, warnings = F}
 ERP <- rbind(read.csv("../data/EXP1_pt1.csv"), read.csv("../data/EXP1_pt2.csv")) %>% 
   filter_if(~is.numeric(.), all_vars(!is.infinite(.))) %>%
-  filter(time >= -100 | time <= 800) 
-
+  filter(time >= -100 & time <= 700) 
 
 ERP %<>% gather(electrode, amplitude, Fp1:T8, factor_key = TRUE) %>%
   mutate(time = as.numeric(as.character(format(round(time, 0), nsmall = 0))),
@@ -153,7 +152,17 @@ plot.diff <- function(elec = "Cz", labels = FALSE, blck = "PRS") {
   return(my.plot) }
 ```
 
-```{r plot.diff.examples, echo = F, warning = F, message = F}
+```{r animated.diff, message = F, warning = F, echo = F}
+library(gifski)
+library(gganimate)
+plot.diff(elec = "FC3", labels = F) + transition_reveal(time)
+```
+
+```{r, echo = F, message = F, warning = F}
+plot.diff(elec = "F4", labels = T) + transition_reveal(time)
+```
+
+```{r plot.diff.examples, eval = F, include = F, message = F}
 plot.diff(elec = "Cz", labels = TRUE)
 plot.diff(elec = "F3", labels = FALSE)
 ```
@@ -204,7 +213,15 @@ bae <- function(elec = "Cz", blck = "PRS", labels = FALSE, significant = TRUE) {
   return(my.plot) }
 ```
 
-```{r bae.examples, message = F, echo = F, warning = F}
+```{r animated.ERP, warning = F, message = F}
+bae(elec = "F4", labels = T, significant = F) + transition_reveal(time)
+```
+
+```{r, echo = F, warning = F, message = F}
+bae(elec = "FC3", labels = F, significant = F) + transition_reveal(time)
+```
+
+```{r bae.examples, message = F, eval = F, include = F}
 bae(elec = "F4", significant = F)
 bae(elec = "T7", significant = F, labels = F)
 ```
@@ -254,8 +271,8 @@ gae <- function(elec = "Cz", cond = "target", labels = FALSE, significant = TRUE
   return(my.plot) }
 ```
 
-```{r sample.gae, message = F, echo = F}
-gae()
+```{r sample.gae, warning = T, message = F, echo = F}
+gae(labels = T) + transition_reveal(time)
 ```
 
 ## scalp template: `theme_topo`
@@ -278,15 +295,16 @@ nose <- data.frame(x = c(-0.075, 0, .075), y=c(.495, .575, .495))
 ## functions `int_scalp_plot` and `int_compare_scalps`
 
 ```{r salp.plots, message = F}
-int_scalp_plot <- function(TP1, TP2, cond = "control") {
+int.scalp.plot <- function(TP1, TP2, cond = "control") {
   
-  ERP_lme <- filter(ERP, time >= TP1) %>%
+  ERP_lme <- ERP %>% 
+    filter(condition == cond) %>%
+    filter(time >= TP1) %>%
     filter(time <= TP2) %>%
     filter(block == "PRS") %>%
     group_by(subject, block, condition, electrode) %>%
-    summarise(avg.mean = mean(amplitude.mean),) %>%
-    ungroup %>% 
-    filter(condition == cond)
+    summarise(Amplitude = mean(amplitude.mean),) %>%
+    ungroup %>% filter(condition == cond)
   
   gridRes <- 124
   
@@ -301,8 +319,7 @@ int_scalp_plot <- function(TP1, TP2, cond = "control") {
                             y = radius * cos(radianTheta))
 
   singleTimepoint <- ERP_lme %>% 
-    left_join(electrodeLocs, by = "electrode") %>%
-    mutate(Amplitude = avg.mean)
+    left_join(electrodeLocs, by = "electrode")
   
   tmpTopo <- with(singleTimepoint, interp(x = x, y = y, z = Amplitude, 
                                           xo = seq(min(x)*2, max(x)*2, 
@@ -340,21 +357,23 @@ int_scalp_plot <- function(TP1, TP2, cond = "control") {
     theme(plot.title = element_text(hjust = 0.5, lineheight = 0.5))
   return(ScalpPlotT) }
 
-int_compare_scalps <- function(tp1, tp2) {
-  control_map <- int_scalp_plot(TP1 = tp1, TP2 = tp2, cond = "control") 
-  target_map <- int_scalp_plot(TP1 = tp1, TP2 = tp2, cond = "target")
+int.compare.scalps <- function(tp1, tp2) {
+  control_map <- int.scalp.plot(TP1 = tp1, TP2 = tp2, cond = "control") 
+  target_map <- int.scalp.plot(TP1 = tp1, TP2 = tp2, cond = "target")
 
-final_plot <- ggarrange(
+final_plot <- annotate_figure(ggarrange(
   target_map + ggtitle("Mismatch"),
   control_map + ggtitle("Match"),
-  common.legend = TRUE)
+  common.legend = TRUE), 
+  top = text_grob(paste("akima amplitude interpolation between" , tp1, " and ", tp2, " ms PSO"), 
+                                     face = "bold"))
 
 return(final_plot) }
 ```
 
 ```{r, include = F, message = F}
-x <- int_compare_scalps(75, 125)
-y <- int_compare_scalps(225, 275)
+x <- int.compare.scalps(75, 125)
+y <- int.compare.scalps(225, 275)
 ```
 
 ```{r, echo = F, message = F}

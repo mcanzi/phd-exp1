@@ -68,6 +68,7 @@ emmeans(summarised.model(150, 200, type = "lm"), pairwise ~ condition | region)
 ```{r, message = F}
 anova(summarised.model(275, 325, type = "lm"))
 ```
+
 ```{r, message = F}
 anova(summarised.model(575, 625, type = "lm"))
 emmeans(summarised.model(575, 625, type = "lm"), pairwise ~ condition | region)
