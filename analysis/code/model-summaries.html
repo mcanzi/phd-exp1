@@ -197,11 +197,12 @@ summary {
 
 <pre class="r"><code>library(emmeans)
 library(lme4)
+library(lmerTest)
 library(magrittr)
 library(tidyverse)</code></pre>
 <pre class="r"><code>ERP &lt;- bind_rows(read.csv(&quot;../data/EXP1_pt1.csv&quot;), read.csv(&quot;../data/EXP1_pt2.csv&quot;)) %&gt;% 
   filter_if(~is.numeric(.), all_vars(!is.infinite(.))) %&gt;%
-  filter(time &gt;= -100 | time &lt;= 800) %&gt;% 
+  filter(time &gt;= -100 &amp; time &lt;= 700) %&gt;% 
   gather(electrode, amplitude, Fp1:T8, factor_key = TRUE) %&gt;%
   mutate(time = as.numeric(as.character(format(round(time, 0), nsmall = 0))),
          Subj = as.factor(Subj),
@@ -220,8 +221,7 @@ names(ERP) &lt;- c(&quot;subject&quot;, &quot;block&quot;, &quot;condition&quot;
 <pre class="r"><code>summarised.model &lt;- function(TP1, TP2, type = &quot;lmer&quot;) {
 
   lmer_data &lt;- left_join(ERP %&gt;% 
-    filter(time &gt;= TP1) %&gt;%
-    filter(time &lt;= TP2) %&gt;%
+    filter(time &gt;= TP1 &amp; time &lt;= TP2) %&gt;%
     filter(block == &quot;PRS&quot;) %&gt;%
     group_by(subject, block, condition, electrode) %&gt;%
     summarise(avg.mean = mean(amplitude.mean),) %&gt;%
@@ -239,6 +239,7 @@ names(ERP) &lt;- c(&quot;subject&quot;, &quot;block&quot;, &quot;condition&quot;
 
   return(m) }</code></pre>
 <pre class="r"><code>anova(summarised.model(150, 200, type = &quot;lm&quot;))</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;subject&#39;, &#39;block&#39;, &#39;condition&#39;. You can override using the `.groups` argument.</code></pre>
 <pre><code>## Analysis of Variance Table
 ## 
 ## Response: avg.mean
@@ -251,6 +252,7 @@ names(ERP) &lt;- c(&quot;subject&quot;, &quot;block&quot;, &quot;condition&quot;
 ## ---
 ## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
 <pre class="r"><code>emmeans(summarised.model(150, 200, type = &quot;lm&quot;), pairwise ~ condition | region)</code></pre>
+<pre><code>## `summarise()` has grouped output by &#39;subject&#39;, &#39;block&#39;, &#39;condition&#39;. You can override using the `.groups` argument.</code></pre>
 <pre><code>## $emmeans
 ## region = anteriofrontal:
 ##  condition  emmean     SE   df lower.CL upper.CL
