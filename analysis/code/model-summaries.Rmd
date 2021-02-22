@@ -8,14 +8,17 @@ output: html_document
 ```{r, message = F}
 library(emmeans)
 library(lme4)
+library(lmerTest)
 library(magrittr)
 library(tidyverse)
 ```
 
 ```{r reading.data, message = F, warning = F}
-ERP <- bind_rows(read.csv("../data/EXP1_pt1.csv"), read.csv("../data/EXP1_pt2.csv")) %>% 
-  filter_if(~is.numeric(.), all_vars(!is.infinite(.))) %>%
-  filter(time >= -100 | time <= 800) %>% 
+ERP <- bind_rows(read.csv("../data/EXP1_pt1.csv"), read.csv("../data/EXP1_pt2.lmer.csv")) %>% 
+  filter(Block == "PRS") %>%
+  filter(Cond == "target" | Cond == "control") %>%
+  # filter_if(~is.numeric(.), all_vars(!is.infinite(.))) %>%
+  filter(time >= 0 & time <= 700) %>% 
   gather(electrode, amplitude, Fp1:T8, factor_key = TRUE) %>%
   mutate(time = as.numeric(as.character(format(round(time, 0), nsmall = 0))),
          Subj = as.factor(Subj),
@@ -42,7 +45,6 @@ summarised.model <- function(TP1, TP2, type = "lmer") {
   lmer_data <- left_join(ERP %>% 
     filter(time >= TP1) %>%
     filter(time <= TP2) %>%
-    filter(block == "PRS") %>%
     group_by(subject, block, condition, electrode) %>%
     summarise(avg.mean = mean(amplitude.mean),) %>%
     ungroup(), read.csv("../resources/lmer_electrodes.csv", sep = ";"), by = "electrode")
@@ -60,7 +62,7 @@ summarised.model <- function(TP1, TP2, type = "lmer") {
   return(m) }
 ```
 
-```{r, message = F}
+```{r, message = T}
 anova(summarised.model(150, 200, type = "lm"))
 emmeans(summarised.model(150, 200, type = "lm"), pairwise ~ condition | region)
 ```
