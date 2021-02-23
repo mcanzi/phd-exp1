@@ -14,65 +14,95 @@ library(magrittr)
 library(tidyverse)
 ```
 
-```{r reading.data, message = F, warning = F}
-ERP <- bind_rows(read.csv("../data/EXP1_pt1.csv"), read.csv("../data/EXP1_pt2.lmer.csv")) %>%
+```{r readr.1, message = FALSE}
+ERP <- bind_rows(read_csv("../data/EXP1_pt1.csv"), 
+                 read_csv("../data/EXP1_pt2.lmer.csv")) %>%
   filter(Block == "PRS") %>%
   filter(Cond == "target" | Cond == "control") %>%
-  # filter_if(~is.numeric(.), all_vars(!is.infinite(.))) %>%
-  filter(time >= 0 & time <= 700) %>%
+  mutate(Subj = as.factor(Subj)) %>%
+  filter(time >= -100 & time <= 700) %>%
   gather(electrode, amplitude, Fp1:T8, factor_key = TRUE) %>%
   mutate(time = as.numeric(as.character(format(round(time, 0), nsmall = 0))),
-         Subj = as.factor(Subj),
          Block = as.factor(Block))
 
 names(ERP) <- c("subject", "block", "condition", "time", "electrode", "amplitude")
 ```
 
-```{r channel.locations, message = F}
-ERP %<>% mutate(time = as.factor(time)) %>%
-  group_by(subject, block, condition, electrode, time) %>%
-  summarise(amplitude.mean = mean(amplitude),) %>%
-  ungroup() %>%
-  mutate(time = as.numeric(as.character(time)),
-         amplitude.mean = as.numeric(amplitude.mean),
-         electrode = as.factor(electrode)) %>%
-  filter(amplitude.mean <= 7 & amplitude.mean >= -7) %>%
+```{r readr.2, message = FALSE}
+ERP %<>% mutate(time = as.factor(time), subject = as.factor(subject)) %>%
+  group_by(subject, block, condition, electrode, time) %>% 
+  summarise(amplitude.mean = mean(amplitude),) %>% 
+  ungroup() %>% mutate(time = as.numeric(as.character(time)), 
+                       amplitude.mean = as.numeric(amplitude.mean), 
+                       electrode = as.factor(electrode)) %>%
+  filter(amplitude.mean <= 20 & amplitude.mean >= -20) %>%
   mutate(amplitude.mean = as.numeric(format(round(amplitude.mean, 2), nsmall = 2)))
 ```
 
-```{r lmer.function, message = F}
-summarised.model <- function(TP1, TP2, type = "lmer") {
-
-  lmer_data <- left_join(ERP %>%
+```{r, summarised.model, message = F}
+summarised.data <- function(TP1, TP2) {
+  
+  lmer.data <- left_join(ERP %>%
     filter(time >= TP1) %>%
     filter(time <= TP2) %>%
     group_by(subject, block, condition, electrode) %>%
-    summarise(avg.mean = mean(amplitude.mean),) %>%
-    ungroup(), read.csv("../resources/lmer_electrodes.csv", sep = ";"), by = "electrode")
+    summarise(amplitude = mean(amplitude.mean),) %>% ungroup,
+    read.csv("../resources/lmer_electrodes.csv", 
+                        sep = ";"), by = "electrode") %>% 
+    filter(side != "none") %>% mutate_if(is.character, as.factor)
 
-    if (type == "lmer")
-
-      m <- lmer_data %>%
-      lmer(formula = avg.mean ~ condition * region + side + (1 | subject))
-
-    if (type == "lm")
-
-      m <- lmer_data %>%
-      lm(formula = avg.mean ~ condition * region + side)
-
-  return(m) }
+  return(lmer.data) }
 ```
 
-```{r, message = T}
-Anova(summarised.model(150, 200, type = "lm"))
-emmeans(summarised.model(150, 200, type = "lm"), pairwise ~ condition | region)
+## LMEM: 75-125 ms
+
+```{r, message = F}
+model.75.125 <- summarised.data(75, 125) %>% 
+  lmer(formula = amplitude ~ condition * region + side + (1 | subject))
+
+isSingular(model.75.125)
+
+model.75.125 <- summarised.data(75, 125) %>% 
+  lm(formula = amplitude ~ condition + region + side)
 ```
 
 ```{r, message = F}
-Anova(summarised.model(275, 325, type = "lm"))
+Anova(model.75.125, type = "III")
+```
+
+## LMEM: 150-200 ms
+
+```{r, message = F}
+model.150.200 <- summarised.data(150, 200) %>% 
+  lm(formula = amplitude ~ condition * region + side)
 ```
 
 ```{r, message = F}
-Anova(summarised.model(575, 625, type = "lm"))
-emmeans(summarised.model(575, 625, type = "lm"), pairwise ~ condition | region)
+Anova(model.150.200, type = "III")
+emmeans(model.150.200, pairwise ~ condition | region * side)
+# summary(model.150.200)
+```
+
+## LMEM: 290-310 ms
+
+```{r, message = F}
+model.290.310 <- summarised.data(290, 310) %>% 
+  lm(formula = amplitude ~ condition + region + side) 
+```
+
+```{r}
+Anova(model.290.310, type = "II")
+```
+
+## LMEM: 575-625 ms
+
+```{r, message = F}
+model.575.625 <- summarised.data(575, 625) %>% 
+  lm(formula = amplitude ~ condition * region + side) 
+```
+
+```{r}
+Anova(model.575.625, type = "III")
+emmeans(model.575.625, pairwise ~ condition | region * side)
+# summary(model.575.625)
 ```
