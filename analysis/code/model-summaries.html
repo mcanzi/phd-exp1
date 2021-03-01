@@ -254,210 +254,113 @@ REML = TRUE</code></pre>
 ## condition:region 18.687  1.8687    10  1797  3.7847 4.567e-05 ***
 ## ---
 ## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
-<pre class="r"><code>emmeans(model.150.200, pairwise ~ condition | region * hemisphere)</code></pre>
+<pre class="r"><code>emmeans(model.150.200, pairwise ~ condition | region)</code></pre>
 <pre><code>## $emmeans
-## region = anteriofrontal, hemisphere = left:
+## region = anteriofrontal:
 ##  condition   emmean     SE   df lower.CL upper.CL
-##  control    0.02492 0.0868 1675 -0.14527  0.19512
-##  target    -0.24549 0.0868 1675 -0.41569 -0.07529
+##  control    0.13417 0.0852 1662  -0.0330   0.3013
+##  target    -0.13624 0.0852 1662  -0.3034   0.0309
 ## 
-## region = central, hemisphere = left:
+## region = central:
 ##  condition   emmean     SE   df lower.CL upper.CL
-##  control   -0.18565 0.0715 1487 -0.32587 -0.04544
-##  target    -0.20953 0.0715 1487 -0.34975 -0.06932
+##  control   -0.07640 0.0696 1451  -0.2129   0.0601
+##  target    -0.10028 0.0696 1451  -0.2368   0.0362
 ## 
-## region = centroparietal, hemisphere = left:
+## region = centroparietal:
 ##  condition   emmean     SE   df lower.CL upper.CL
-##  control   -0.26578 0.0715 1487 -0.40600 -0.12557
-##  target    -0.20968 0.0715 1487 -0.34990 -0.06947
+##  control   -0.15653 0.0696 1451  -0.2930  -0.0201
+##  target    -0.10043 0.0696 1451  -0.2369   0.0360
 ## 
-## region = frontal, hemisphere = left:
+## region = frontal:
 ##  condition   emmean     SE   df lower.CL upper.CL
-##  control    0.11431 0.0624 1283 -0.00819  0.23682
-##  target    -0.11744 0.0624 1283 -0.23994  0.00507
+##  control    0.22357 0.0603 1219   0.1054   0.3418
+##  target    -0.00819 0.0603 1219  -0.1264   0.1100
 ## 
-## region = frontocentral, hemisphere = left:
+## region = frontocentral:
 ##  condition   emmean     SE   df lower.CL upper.CL
-##  control   -0.05263 0.0715 1487 -0.19285  0.08758
-##  target    -0.23409 0.0715 1487 -0.37430 -0.09388
+##  control    0.05662 0.0696 1451  -0.0799   0.1931
+##  target    -0.12484 0.0696 1451  -0.2613   0.0116
 ## 
-## region = frontotemporal, hemisphere = left:
+## region = frontotemporal:
 ##  condition   emmean     SE   df lower.CL upper.CL
-##  control    0.37347 0.1216 1795  0.13495  0.61200
-##  target     0.14444 0.1216 1795 -0.09409  0.38296
+##  control    0.48273 0.1205 1794   0.2464   0.7191
+##  target     0.25369 0.1205 1794   0.0173   0.4900
 ## 
-## region = occipital, hemisphere = left:
+## region = occipital:
 ##  condition   emmean     SE   df lower.CL upper.CL
-##  control   -0.28010 0.1216 1795 -0.51862 -0.04158
-##  target     0.05403 0.1216 1795 -0.18450  0.29255
+##  control   -0.17085 0.1205 1794  -0.4072   0.0655
+##  target     0.16328 0.1205 1794  -0.0731   0.3996
 ## 
-## region = parietal, hemisphere = left:
+## region = parietal:
 ##  condition   emmean     SE   df lower.CL upper.CL
-##  control   -0.24577 0.0563 1093 -0.35630 -0.13524
-##  target    -0.02652 0.0563 1093 -0.13705  0.08401
+##  control   -0.13652 0.0539 1006  -0.2423  -0.0308
+##  target     0.08273 0.0539 1006  -0.0230   0.1885
 ## 
-## region = parietooccipital, hemisphere = left:
+## region = parietooccipital:
 ##  condition   emmean     SE   df lower.CL upper.CL
-##  control   -0.34560 0.0868 1675 -0.51579 -0.17540
-##  target    -0.03210 0.0868 1675 -0.20230  0.13809
+##  control   -0.23635 0.0852 1662  -0.4035  -0.0692
+##  target     0.07715 0.0852 1662  -0.0900   0.2443
 ## 
-## region = prefrontal, hemisphere = left:
+## region = prefrontal:
 ##  condition   emmean     SE   df lower.CL upper.CL
-##  control   -0.01955 0.1216 1795 -0.25807  0.21898
-##  target    -0.17880 0.1216 1795 -0.41732  0.05973
+##  control    0.08971 0.1205 1794  -0.1466   0.3261
+##  target    -0.06955 0.1205 1794  -0.3059   0.1668
 ## 
-## region = temporal, hemisphere = left:
+## region = temporal:
 ##  condition   emmean     SE   df lower.CL upper.CL
-##  control    0.25139 0.0868 1675  0.08120  0.42159
-##  target     0.19360 0.0868 1675  0.02341  0.36380
+##  control    0.36064 0.0852 1662   0.1935   0.5278
+##  target     0.30286 0.0852 1662   0.1357   0.4700
 ## 
-## region = anteriofrontal, hemisphere = right:
-##  condition   emmean     SE   df lower.CL upper.CL
-##  control    0.24343 0.0868 1675  0.07323  0.41362
-##  target    -0.02699 0.0868 1675 -0.19718  0.14321
-## 
-## region = central, hemisphere = right:
-##  condition   emmean     SE   df lower.CL upper.CL
-##  control    0.03285 0.0715 1487 -0.10736  0.17306
-##  target     0.00897 0.0715 1487 -0.13124  0.14918
-## 
-## region = centroparietal, hemisphere = right:
-##  condition   emmean     SE   df lower.CL upper.CL
-##  control   -0.04728 0.0715 1487 -0.18749  0.09293
-##  target     0.00882 0.0715 1487 -0.13140  0.14903
-## 
-## region = frontal, hemisphere = right:
-##  condition   emmean     SE   df lower.CL upper.CL
-##  control    0.33282 0.0624 1283  0.21031  0.45532
-##  target     0.10106 0.0624 1283 -0.02144  0.22357
-## 
-## region = frontocentral, hemisphere = right:
-##  condition   emmean     SE   df lower.CL upper.CL
-##  control    0.16587 0.0715 1487  0.02566  0.30608
-##  target    -0.01559 0.0715 1487 -0.15580  0.12463
-## 
-## region = frontotemporal, hemisphere = right:
-##  condition   emmean     SE   df lower.CL upper.CL
-##  control    0.59198 0.1216 1795  0.35345  0.83050
-##  target     0.36294 0.1216 1795  0.12441  0.60146
-## 
-## region = occipital, hemisphere = right:
-##  condition   emmean     SE   df lower.CL upper.CL
-##  control   -0.06160 0.1216 1795 -0.30012  0.17693
-##  target     0.27253 0.1216 1795  0.03401  0.51106
-## 
-## region = parietal, hemisphere = right:
-##  condition   emmean     SE   df lower.CL upper.CL
-##  control   -0.02726 0.0563 1093 -0.13779  0.08327
-##  target     0.19198 0.0563 1093  0.08145  0.30251
-## 
-## region = parietooccipital, hemisphere = right:
-##  condition   emmean     SE   df lower.CL upper.CL
-##  control   -0.12709 0.0868 1675 -0.29729  0.04310
-##  target     0.18640 0.0868 1675  0.01620  0.35660
-## 
-## region = prefrontal, hemisphere = right:
-##  condition   emmean     SE   df lower.CL upper.CL
-##  control    0.19896 0.1216 1795 -0.03957  0.43748
-##  target     0.03970 0.1216 1795 -0.19882  0.27823
-## 
-## region = temporal, hemisphere = right:
-##  condition   emmean     SE   df lower.CL upper.CL
-##  control    0.46990 0.0868 1675  0.29970  0.64009
-##  target     0.41211 0.0868 1675  0.24191  0.58230
-## 
+## Results are averaged over the levels of: hemisphere 
 ## Degrees-of-freedom method: kenward-roger 
 ## Confidence level used: 0.95 
 ## 
 ## $contrasts
-## region = anteriofrontal, hemisphere = left:
+## region = anteriofrontal:
 ##  contrast         estimate     SE   df t.ratio p.value
 ##  control - target   0.2704 0.1205 1797  2.244  0.0250 
 ## 
-## region = central, hemisphere = left:
+## region = central:
 ##  contrast         estimate     SE   df t.ratio p.value
 ##  control - target   0.0239 0.0984 1797  0.243  0.8083 
 ## 
-## region = centroparietal, hemisphere = left:
+## region = centroparietal:
 ##  contrast         estimate     SE   df t.ratio p.value
 ##  control - target  -0.0561 0.0984 1797 -0.570  0.5687 
 ## 
-## region = frontal, hemisphere = left:
+## region = frontal:
 ##  contrast         estimate     SE   df t.ratio p.value
 ##  control - target   0.2318 0.0852 1797  2.720  0.0066 
 ## 
-## region = frontocentral, hemisphere = left:
+## region = frontocentral:
 ##  contrast         estimate     SE   df t.ratio p.value
 ##  control - target   0.1815 0.0984 1797  1.844  0.0653 
 ## 
-## region = frontotemporal, hemisphere = left:
+## region = frontotemporal:
 ##  contrast         estimate     SE   df t.ratio p.value
 ##  control - target   0.2290 0.1704 1797  1.344  0.1791 
 ## 
-## region = occipital, hemisphere = left:
+## region = occipital:
 ##  contrast         estimate     SE   df t.ratio p.value
 ##  control - target  -0.3341 0.1704 1797 -1.961  0.0501 
 ## 
-## region = parietal, hemisphere = left:
+## region = parietal:
 ##  contrast         estimate     SE   df t.ratio p.value
 ##  control - target  -0.2192 0.0762 1797 -2.877  0.0041 
 ## 
-## region = parietooccipital, hemisphere = left:
+## region = parietooccipital:
 ##  contrast         estimate     SE   df t.ratio p.value
 ##  control - target  -0.3135 0.1205 1797 -2.601  0.0094 
 ## 
-## region = prefrontal, hemisphere = left:
+## region = prefrontal:
 ##  contrast         estimate     SE   df t.ratio p.value
 ##  control - target   0.1593 0.1704 1797  0.934  0.3502 
 ## 
-## region = temporal, hemisphere = left:
+## region = temporal:
 ##  contrast         estimate     SE   df t.ratio p.value
 ##  control - target   0.0578 0.1205 1797  0.480  0.6316 
 ## 
-## region = anteriofrontal, hemisphere = right:
-##  contrast         estimate     SE   df t.ratio p.value
-##  control - target   0.2704 0.1205 1797  2.244  0.0250 
-## 
-## region = central, hemisphere = right:
-##  contrast         estimate     SE   df t.ratio p.value
-##  control - target   0.0239 0.0984 1797  0.243  0.8083 
-## 
-## region = centroparietal, hemisphere = right:
-##  contrast         estimate     SE   df t.ratio p.value
-##  control - target  -0.0561 0.0984 1797 -0.570  0.5687 
-## 
-## region = frontal, hemisphere = right:
-##  contrast         estimate     SE   df t.ratio p.value
-##  control - target   0.2318 0.0852 1797  2.720  0.0066 
-## 
-## region = frontocentral, hemisphere = right:
-##  contrast         estimate     SE   df t.ratio p.value
-##  control - target   0.1815 0.0984 1797  1.844  0.0653 
-## 
-## region = frontotemporal, hemisphere = right:
-##  contrast         estimate     SE   df t.ratio p.value
-##  control - target   0.2290 0.1704 1797  1.344  0.1791 
-## 
-## region = occipital, hemisphere = right:
-##  contrast         estimate     SE   df t.ratio p.value
-##  control - target  -0.3341 0.1704 1797 -1.961  0.0501 
-## 
-## region = parietal, hemisphere = right:
-##  contrast         estimate     SE   df t.ratio p.value
-##  control - target  -0.2192 0.0762 1797 -2.877  0.0041 
-## 
-## region = parietooccipital, hemisphere = right:
-##  contrast         estimate     SE   df t.ratio p.value
-##  control - target  -0.3135 0.1205 1797 -2.601  0.0094 
-## 
-## region = prefrontal, hemisphere = right:
-##  contrast         estimate     SE   df t.ratio p.value
-##  control - target   0.1593 0.1704 1797  0.934  0.3502 
-## 
-## region = temporal, hemisphere = right:
-##  contrast         estimate     SE   df t.ratio p.value
-##  control - target   0.0578 0.1205 1797  0.480  0.6316 
-## 
+## Results are averaged over the levels of: hemisphere 
 ## Degrees-of-freedom method: kenward-roger</code></pre>
 </div>
 <div id="lmem-290-310-ms" class="section level2">
@@ -487,210 +390,113 @@ REML = TRUE</code></pre>
 ## condition:region  130.19  13.019    10  1797  7.2172 2.948e-11 ***
 ## ---
 ## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
-<pre class="r"><code>emmeans(model.575.625, pairwise ~ condition | region * hemisphere)</code></pre>
+<pre class="r"><code>emmeans(model.575.625, pairwise ~ condition | region)</code></pre>
 <pre><code>## $emmeans
-## region = anteriofrontal, hemisphere = left:
+## region = anteriofrontal:
 ##  condition  emmean    SE   df lower.CL upper.CL
-##  control   -0.8507 0.166 1675  -1.1761  -0.5254
-##  target    -1.4211 0.166 1675  -1.7464  -1.0957
+##  control   -0.9547 0.163 1662  -1.2741   -0.635
+##  target    -1.5250 0.163 1662  -1.8444   -1.206
 ## 
-## region = central, hemisphere = left:
+## region = central:
 ##  condition  emmean    SE   df lower.CL upper.CL
-##  control   -0.0349 0.137 1487  -0.3029   0.2331
-##  target    -0.1690 0.137 1487  -0.4370   0.0990
+##  control   -0.1388 0.133 1451  -0.3996    0.122
+##  target    -0.2729 0.133 1451  -0.5337   -0.012
 ## 
-## region = centroparietal, hemisphere = left:
+## region = centroparietal:
 ##  condition  emmean    SE   df lower.CL upper.CL
-##  control    0.4243 0.137 1487   0.1563   0.6923
-##  target     0.5556 0.137 1487   0.2876   0.8236
+##  control    0.3204 0.133 1451   0.0595    0.581
+##  target     0.4517 0.133 1451   0.1908    0.713
 ## 
-## region = frontal, hemisphere = left:
+## region = frontal:
 ##  condition  emmean    SE   df lower.CL upper.CL
-##  control   -0.5010 0.119 1283  -0.7352  -0.2668
-##  target    -1.1403 0.119 1283  -1.3745  -0.9062
+##  control   -0.6049 0.115 1219  -0.8309   -0.379
+##  target    -1.2442 0.115 1219  -1.4702   -1.018
 ## 
-## region = frontocentral, hemisphere = left:
+## region = frontocentral:
 ##  condition  emmean    SE   df lower.CL upper.CL
-##  control   -0.3759 0.137 1487  -0.6439  -0.1079
-##  target    -0.8343 0.137 1487  -1.1023  -0.5663
+##  control   -0.4798 0.133 1451  -0.7407   -0.219
+##  target    -0.9382 0.133 1451  -1.1990   -0.677
 ## 
-## region = frontotemporal, hemisphere = left:
+## region = frontotemporal:
 ##  condition  emmean    SE   df lower.CL upper.CL
-##  control    0.1342 0.232 1795  -0.3217   0.5901
-##  target     0.0110 0.232 1795  -0.4449   0.4670
+##  control    0.0303 0.230 1794  -0.4214    0.482
+##  target    -0.0929 0.230 1794  -0.5446    0.359
 ## 
-## region = occipital, hemisphere = left:
+## region = occipital:
 ##  condition  emmean    SE   df lower.CL upper.CL
-##  control    0.9060 0.232 1795   0.4500   1.3619
-##  target     1.7307 0.232 1795   1.2748   2.1867
+##  control    0.8020 0.230 1794   0.3503    1.254
+##  target     1.6268 0.230 1794   1.1751    2.079
 ## 
-## region = parietal, hemisphere = left:
+## region = parietal:
 ##  condition  emmean    SE   df lower.CL upper.CL
-##  control    0.7947 0.108 1093   0.5835   1.0060
-##  target     1.4276 0.108 1093   1.2164   1.6389
+##  control    0.6908 0.103 1006   0.4887    0.893
+##  target     1.3237 0.103 1006   1.1216    1.526
 ## 
-## region = parietooccipital, hemisphere = left:
+## region = parietooccipital:
 ##  condition  emmean    SE   df lower.CL upper.CL
-##  control    0.8118 0.166 1675   0.4864   1.1371
-##  target     1.5302 0.166 1675   1.2049   1.8555
+##  control    0.7078 0.163 1662   0.3884    1.027
+##  target     1.4263 0.163 1662   1.1069    1.746
 ## 
-## region = prefrontal, hemisphere = left:
+## region = prefrontal:
 ##  condition  emmean    SE   df lower.CL upper.CL
-##  control   -1.0206 0.232 1795  -1.4765  -0.5646
-##  target    -1.7387 0.232 1795  -2.1947  -1.2828
+##  control   -1.1245 0.230 1794  -1.5762   -0.673
+##  target    -1.8427 0.230 1794  -2.2944   -1.391
 ## 
-## region = temporal, hemisphere = left:
+## region = temporal:
 ##  condition  emmean    SE   df lower.CL upper.CL
-##  control    0.5514 0.166 1675   0.2260   0.8767
-##  target     0.9964 0.166 1675   0.6711   1.3217
+##  control    0.4474 0.163 1662   0.1280    0.767
+##  target     0.8925 0.163 1662   0.5730    1.212
 ## 
-## region = anteriofrontal, hemisphere = right:
-##  condition  emmean    SE   df lower.CL upper.CL
-##  control   -1.0586 0.166 1675  -1.3839  -0.7333
-##  target    -1.6289 0.166 1675  -1.9542  -1.3036
-## 
-## region = central, hemisphere = right:
-##  condition  emmean    SE   df lower.CL upper.CL
-##  control   -0.2427 0.137 1487  -0.5107   0.0253
-##  target    -0.3768 0.137 1487  -0.6448  -0.1088
-## 
-## region = centroparietal, hemisphere = right:
-##  condition  emmean    SE   df lower.CL upper.CL
-##  control    0.2165 0.137 1487  -0.0515   0.4845
-##  target     0.3478 0.137 1487   0.0798   0.6158
-## 
-## region = frontal, hemisphere = right:
-##  condition  emmean    SE   df lower.CL upper.CL
-##  control   -0.7088 0.119 1283  -0.9430  -0.4747
-##  target    -1.3482 0.119 1283  -1.5823  -1.1140
-## 
-## region = frontocentral, hemisphere = right:
-##  condition  emmean    SE   df lower.CL upper.CL
-##  control   -0.5837 0.137 1487  -0.8517  -0.3157
-##  target    -1.0421 0.137 1487  -1.3101  -0.7741
-## 
-## region = frontotemporal, hemisphere = right:
-##  condition  emmean    SE   df lower.CL upper.CL
-##  control   -0.0736 0.232 1795  -0.5295   0.3823
-##  target    -0.1968 0.232 1795  -0.6527   0.2591
-## 
-## region = occipital, hemisphere = right:
-##  condition  emmean    SE   df lower.CL upper.CL
-##  control    0.6981 0.232 1795   0.2422   1.1541
-##  target     1.5229 0.232 1795   1.0670   1.9788
-## 
-## region = parietal, hemisphere = right:
-##  condition  emmean    SE   df lower.CL upper.CL
-##  control    0.5869 0.108 1093   0.3756   0.7982
-##  target     1.2198 0.108 1093   1.0085   1.4311
-## 
-## region = parietooccipital, hemisphere = right:
-##  condition  emmean    SE   df lower.CL upper.CL
-##  control    0.6039 0.166 1675   0.2786   0.9292
-##  target     1.3224 0.166 1675   0.9971   1.6477
-## 
-## region = prefrontal, hemisphere = right:
-##  condition  emmean    SE   df lower.CL upper.CL
-##  control   -1.2284 0.232 1795  -1.6843  -0.7725
-##  target    -1.9466 0.232 1795  -2.4025  -1.4907
-## 
-## region = temporal, hemisphere = right:
-##  condition  emmean    SE   df lower.CL upper.CL
-##  control    0.3435 0.166 1675   0.0182   0.6689
-##  target     0.7886 0.166 1675   0.4632   1.1139
-## 
+## Results are averaged over the levels of: hemisphere 
 ## Degrees-of-freedom method: kenward-roger 
 ## Confidence level used: 0.95 
 ## 
 ## $contrasts
-## region = anteriofrontal, hemisphere = left:
+## region = anteriofrontal:
 ##  contrast         estimate    SE   df t.ratio p.value
 ##  control - target    0.570 0.230 1797  2.476  0.0134 
 ## 
-## region = central, hemisphere = left:
+## region = central:
 ##  contrast         estimate    SE   df t.ratio p.value
 ##  control - target    0.134 0.188 1797  0.713  0.4759 
 ## 
-## region = centroparietal, hemisphere = left:
+## region = centroparietal:
 ##  contrast         estimate    SE   df t.ratio p.value
 ##  control - target   -0.131 0.188 1797 -0.698  0.4851 
 ## 
-## region = frontal, hemisphere = left:
+## region = frontal:
 ##  contrast         estimate    SE   df t.ratio p.value
 ##  control - target    0.639 0.163 1797  3.925  0.0001 
 ## 
-## region = frontocentral, hemisphere = left:
+## region = frontocentral:
 ##  contrast         estimate    SE   df t.ratio p.value
 ##  control - target    0.458 0.188 1797  2.437  0.0149 
 ## 
-## region = frontotemporal, hemisphere = left:
+## region = frontotemporal:
 ##  contrast         estimate    SE   df t.ratio p.value
 ##  control - target    0.123 0.326 1797  0.378  0.7053 
 ## 
-## region = occipital, hemisphere = left:
+## region = occipital:
 ##  contrast         estimate    SE   df t.ratio p.value
 ##  control - target   -0.825 0.326 1797 -2.532  0.0114 
 ## 
-## region = parietal, hemisphere = left:
+## region = parietal:
 ##  contrast         estimate    SE   df t.ratio p.value
 ##  control - target   -0.633 0.146 1797 -4.344  &lt;.0001 
 ## 
-## region = parietooccipital, hemisphere = left:
+## region = parietooccipital:
 ##  contrast         estimate    SE   df t.ratio p.value
 ##  control - target   -0.718 0.230 1797 -3.119  0.0018 
 ## 
-## region = prefrontal, hemisphere = left:
+## region = prefrontal:
 ##  contrast         estimate    SE   df t.ratio p.value
 ##  control - target    0.718 0.326 1797  2.205  0.0276 
 ## 
-## region = temporal, hemisphere = left:
+## region = temporal:
 ##  contrast         estimate    SE   df t.ratio p.value
 ##  control - target   -0.445 0.230 1797 -1.932  0.0535 
 ## 
-## region = anteriofrontal, hemisphere = right:
-##  contrast         estimate    SE   df t.ratio p.value
-##  control - target    0.570 0.230 1797  2.476  0.0134 
-## 
-## region = central, hemisphere = right:
-##  contrast         estimate    SE   df t.ratio p.value
-##  control - target    0.134 0.188 1797  0.713  0.4759 
-## 
-## region = centroparietal, hemisphere = right:
-##  contrast         estimate    SE   df t.ratio p.value
-##  control - target   -0.131 0.188 1797 -0.698  0.4851 
-## 
-## region = frontal, hemisphere = right:
-##  contrast         estimate    SE   df t.ratio p.value
-##  control - target    0.639 0.163 1797  3.925  0.0001 
-## 
-## region = frontocentral, hemisphere = right:
-##  contrast         estimate    SE   df t.ratio p.value
-##  control - target    0.458 0.188 1797  2.437  0.0149 
-## 
-## region = frontotemporal, hemisphere = right:
-##  contrast         estimate    SE   df t.ratio p.value
-##  control - target    0.123 0.326 1797  0.378  0.7053 
-## 
-## region = occipital, hemisphere = right:
-##  contrast         estimate    SE   df t.ratio p.value
-##  control - target   -0.825 0.326 1797 -2.532  0.0114 
-## 
-## region = parietal, hemisphere = right:
-##  contrast         estimate    SE   df t.ratio p.value
-##  control - target   -0.633 0.146 1797 -4.344  &lt;.0001 
-## 
-## region = parietooccipital, hemisphere = right:
-##  contrast         estimate    SE   df t.ratio p.value
-##  control - target   -0.718 0.230 1797 -3.119  0.0018 
-## 
-## region = prefrontal, hemisphere = right:
-##  contrast         estimate    SE   df t.ratio p.value
-##  control - target    0.718 0.326 1797  2.205  0.0276 
-## 
-## region = temporal, hemisphere = right:
-##  contrast         estimate    SE   df t.ratio p.value
-##  control - target   -0.445 0.230 1797 -1.932  0.0535 
-## 
+## Results are averaged over the levels of: hemisphere 
 ## Degrees-of-freedom method: kenward-roger</code></pre>
 </div>
 

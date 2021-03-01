@@ -88,7 +88,7 @@ model.150.200 <- summarised.data(150, 200) %>%
 
 ```{r, message = F}
 anova(model.150.200, type = "III", ddf = "Kenward-Roger")
-emmeans(model.150.200, pairwise ~ condition | region * hemisphere)
+emmeans(model.150.200, pairwise ~ condition | region)
 ```
 
 ## LMEM: 290-310 ms
@@ -111,5 +111,5 @@ model.575.625 <- summarised.data(575, 625) %>%
 
 ```{r}
 anova(model.575.625, type = "III", ddf = "Kenward-Roger")
-emmeans(model.575.625, pairwise ~ condition | region * hemisphere)
+emmeans(model.575.625, pairwise ~ condition | region)
 ```
