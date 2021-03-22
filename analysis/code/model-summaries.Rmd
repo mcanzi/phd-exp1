@@ -91,15 +91,26 @@ anova(model.150.200, type = "III", ddf = "Kenward-Roger")
 emmeans(model.150.200, pairwise ~ condition | region)
 ```
 
-## LMEM: 290-310 ms
+## LMEM: 250-300 ms
 
 ```{r, message = F}
-model.290.310 <- summarised.data(290, 310) %>% 
+model.250.300 <- summarised.data(250, 300) %>% 
   lmer(formula = amplitude ~ condition * region + hemisphere + (1 | subject)) 
 ```
 
 ```{r}
-anova(model.290.310, type = "III", ddf = "Kenward-Roger")
+anova(model.250.300, type = "III", ddf = "Kenward-Roger")
+```
+
+## LMEM: 300-350 ms
+
+```{r, message = F}
+model.300.350 <- summarised.data(300, 350) %>% 
+  lmer(formula = amplitude ~ condition * region + hemisphere + (1 | subject)) 
+```
+
+```{r}
+anova(model.300.350, type = "III", ddf = "Kenward-Roger")
 ```
 
 ## LMEM: 575-625 ms
