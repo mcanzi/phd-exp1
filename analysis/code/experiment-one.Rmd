@@ -365,7 +365,7 @@ final_plot <- annotate_figure(ggarrange(
   target_map + ggtitle("Mismatch"),
   control_map + ggtitle("Match"),
   common.legend = TRUE), 
-  top = text_grob(paste("akima amplitude interpolation between" , tp1, " and ", tp2, " ms PSO"), 
+  top = text_grob(paste("akima cubic-spline interpolation map between" , tp1, " and ", tp2, " ms PSO"), 
                                      face = "bold"))
 
 return(final_plot) }
@@ -374,6 +374,23 @@ return(final_plot) }
 ```{r, include = F, message = F}
 x <- int.compare.scalps(75, 125)
 y <- int.compare.scalps(225, 275)
+```
+
+
+```{r, include = F, message = F}
+T1 <- 0
+T2 <- 4
+
+for (i in 1:140) {
+  z <- int.compare.scalps(T1, T2)
+  ggsave(paste0("gif/frame", i+100, ".png"), z)
+  T1 <- T1 + 5
+  T2 <- T2 + 5
+}
+
+library(gifski)
+png_files <- list.files("gif/", pattern = ".*png$", full.names = TRUE)
+gifski(png_files, gif_file = "animation.gif", width = 1000, height = 600, delay = 0.04)
 ```
 
 ```{r, echo = F, message = F}
