@@ -13,8 +13,6 @@ library(tidymv)
 library(tidyverse)
 ```
 
-## `readr`
-
 ```{r readr.1, message = FALSE, include = F}
 ERP <- bind_rows(read_csv("../data/EXP1_pt1.csv"), 
                  read_csv("../data/EXP1_pt2.lmer.csv")) %>%
@@ -39,10 +37,6 @@ ERP %<>% mutate(time = as.factor(time), subject = as.factor(subject)) %>%
   filter(amplitude.mean <= 20 & amplitude.mean >= -20) %>%
   mutate(amplitude.mean = as.numeric(format(round(amplitude.mean, 2), nsmall = 2)))
 ```
-
-## GAMMs
-
-### Frontal, Fronto-central
 
 ```{r, include = F}
 F.gamms <- ERP %>% 
@@ -111,7 +105,8 @@ plot_smooths(model = hemi.model,
              series = time, 
              comparison = condition, 
              facet_terms = hemisphere,
-             split = list(hemi.cond = c("hemisphere", "condition"))) + 
+             split = list(hemi.cond = c("hemisphere", "condition")), 
+             exclude_random = TRUE) + 
   theme_minimal() + 
   theme(legend.position = "top", aspect.ratio = 1/1.4) + 
   geom_hline(yintercept = 0, linetype = "solid") + xlab("Time (in ms)") + 
