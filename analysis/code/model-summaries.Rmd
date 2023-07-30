@@ -7,21 +7,21 @@ output: html_document
 
 ```{r, message = F}
 library(emmeans)
-library(lme4)
-library(lmerTest)
-library(magrittr)
+library(itsadug)
+library(mgcv)
+library(tidymv)
 library(tidyverse)
 ```
 
 ## `readr`
 
-```{r readr.1, message = FALSE}
+```{r readr.1, message = FALSE, include = F}
 ERP <- bind_rows(read_csv("../data/EXP1_pt1.csv"), 
                  read_csv("../data/EXP1_pt2.lmer.csv")) %>%
   filter(Block == "PRS") %>%
   filter(Cond == "target" | Cond == "control") %>%
   mutate(Subj = as.factor(Subj)) %>%
-  filter(time >= -100 & time <= 700) %>%
+  filter(time >= -100 & time <= 400) %>%
   gather(electrode, amplitude, Fp1:T8, factor_key = TRUE) %>%
   mutate(time = as.numeric(as.character(format(round(time, 0), nsmall = 0))),
          Block = as.factor(Block))
@@ -29,7 +29,7 @@ ERP <- bind_rows(read_csv("../data/EXP1_pt1.csv"),
 names(ERP) <- c("subject", "block", "condition", "time", "electrode", "amplitude")
 ```
 
-```{r readr.2, message = FALSE}
+```{r readr.2, message = FALSE, include = F}
 ERP %<>% mutate(time = as.factor(time), subject = as.factor(subject)) %>%
   group_by(subject, block, condition, electrode, time) %>% 
   summarise(amplitude.mean = mean(amplitude),) %>% 
@@ -40,87 +40,90 @@ ERP %<>% mutate(time = as.factor(time), subject = as.factor(subject)) %>%
   mutate(amplitude.mean = as.numeric(format(round(amplitude.mean, 2), nsmall = 2)))
 ```
 
-## Modelling
+## GAMMs
 
-```{r, summarised.model, message = F}
-summarised.data <- function(TP1, TP2) {
-  
-  lmer.data <- left_join(ERP %>%
-    filter(time >= TP1) %>%
-    filter(time <= TP2) %>%
-    group_by(subject, block, condition, electrode) %>%
-    summarise(amplitude = mean(amplitude.mean),) %>% ungroup,
-    read.csv("../resources/lmer_electrodes.csv", 
-                        sep = ";"), by = "electrode") %>% 
-    filter(side != "none") %>% 
-    rename(hemisphere = side) %>%
-    mutate_if(is.character, as.factor)
+### Frontal, Fronto-central
 
-  return(lmer.data) }
+```{r, include = F}
+F.gamms <- ERP %>% 
+  select(subject, amplitude = amplitude.mean, condition, time, electrode) %>% 
+  filter(electrode %in% c("F1", "F3", "F5", "FC1", "FC3", "FC5", "T7", 
+                          "F2", "F4", "F6", "FC2", "FC4", "FC6", "T8")) %>% 
+  filter(condition == "control" | condition == "target") %>% 
+  mutate(hemisphere = if_else(electrode %in% c("F1", "F3", "F5", "FC1", "FC3", "FC5", "T7"), "Left Hemisphere", "Right Hemisphere"), 
+         condition = as.ordered(condition)) %>% 
+  mutate(hemi.cond = interaction(hemisphere, condition)) %>% 
+  mutate(hemi.cond = as.ordered(hemi.cond))
+contrasts(F.gamms$condition) <- "contr.treatment"
+contrasts(F.gamms$hemi.cond) <- "contr.treatment"
 ```
 
-```{r control.REML, message = F}
-control <- lmerControl(check.conv.singular = "ignore")
-REML = TRUE
+```{r, warning = F}
+hemi.model <- bam(amplitude ~ 
+                     s(time, k = 40) + 
+                     hemi.cond + 
+                     s(time, by = hemi.cond, k = 50) +
+                     s(time, subject, bs = "fs", m = 1) + 
+                     s(time, electrode, bs = "fs", m = 1), 
+                   method = "ML", data = F.gamms)
 ```
 
-```{r head, message = F}
-head(summarised.data(75, 100))
+```{r, warning = F}
+cond.model <- bam(amplitude ~ 
+                     s(time, k = 40) + 
+                     condition + 
+                     s(time, by = condition, k = 50) +
+                     s(time, subject, bs = "fs", m = 1) + 
+                     s(time, electrode, bs = "fs", m = 1), 
+                   method = "ML", data = F.gamms)
 ```
 
-## LMEM: 75-125 ms
-
-```{r, message = F}
-model.75.125 <- summarised.data(75, 125) %>% 
-  lmer(formula = amplitude ~ condition * region + hemisphere + (1 | subject))
-```
-
-```{r, message = F}
-anova(model.75.125, type = "III", ddf = "Kenward-Roger")
-```
-
-## LMEM: 150-200 ms
-
-```{r, message = F}
-model.150.200 <- summarised.data(150, 200) %>% 
-  lmer(formula = amplitude ~ condition * region + hemisphere + (1 | subject))
-```
-
-```{r, message = F}
-anova(model.150.200, type = "III", ddf = "Kenward-Roger")
-emmeans(model.150.200, pairwise ~ condition | region)
-```
-
-## LMEM: 250-300 ms
-
-```{r, message = F}
-model.250.300 <- summarised.data(250, 300) %>% 
-  lmer(formula = amplitude ~ condition * region + hemisphere + (1 | subject)) 
+```{r, warning = F}
+null.model <- bam(amplitude ~ 
+                     s(time, k = 40) + 
+                     #hemi.cond + 
+                     #s(time, by = hemi.cond, k = 50) +
+                     s(time, subject, bs = "fs", m = 1) + 
+                     s(time, electrode, bs = "fs", m = 1), 
+                   method = "ML", data = F.gamms)
 ```
 
 ```{r}
-anova(model.250.300, type = "III", ddf = "Kenward-Roger")
-```
-
-## LMEM: 300-350 ms
-
-```{r, message = F}
-model.300.350 <- summarised.data(300, 350) %>% 
-  lmer(formula = amplitude ~ condition * region + hemisphere + (1 | subject)) 
+compareML(null.model, cond.model)
 ```
 
 ```{r}
-anova(model.300.350, type = "III", ddf = "Kenward-Roger")
+compareML(cond.model, hemi.model)
 ```
 
-## LMEM: 575-625 ms
-
-```{r, message = F}
-model.575.625 <- summarised.data(575, 625) %>% 
-  lmer(formula = amplitude ~ condition * region + hemisphere + (1 | subject)) 
+```{r, warning = F}
+hemi.model <- bam(amplitude ~ 
+                     s(time, k = 40) + 
+                     hemi.cond + 
+                     s(time, by = hemi.cond, k = 50) +
+                     s(time, subject, bs = "fs", m = 1) + 
+                     s(time, electrode, bs = "fs", m = 1), 
+                   method = "fREML", data = F.gamms)
 ```
 
-```{r}
-anova(model.575.625, type = "III", ddf = "Kenward-Roger")
-emmeans(model.575.625, pairwise ~ condition | region)
+```{r, echo = F}
+plot_smooths(model = hemi.model, 
+             series = time, 
+             comparison = condition, 
+             facet_terms = hemisphere,
+             split = list(hemi.cond = c("hemisphere", "condition"))) + 
+  theme_minimal() + 
+  theme(legend.position = "top", aspect.ratio = 1/1.4) + 
+  geom_hline(yintercept = 0, linetype = "solid") + xlab("Time (in ms)") + 
+  ylab("Amplitude (in muV)") + 
+  geom_vline(xintercept = 0, linetype = "solid", width = 0.5) + 
+  scale_color_manual(values = c("indianred3", "deepskyblue4"), 
+                     name = "Experimental Condition", 
+                     labels = c("Control", "Target")) +
+  scale_fill_manual(values = c("indianred3", "deepskyblue4"), 
+                     name = "Experimental Condition", 
+                     labels = c("Control", "Target")) + 
+  scale_linetype_manual(values = c("dashed", "solid"), 
+                     name = "Experimental Condition", 
+                     labels = c("Control", "Target"))
 ```
